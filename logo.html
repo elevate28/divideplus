@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+
+    <title>Map Thought</title>
+    <script src="js/jquery-2.1.4.min.js" type="text/javascript"></script>
+    <script src="js/snap.svg.js" type="text/javascript"></script>
+    <script src="js/Point.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div class="scripts">
+        <script type="text/javascript">
+            function Canvas(width, height, parent, scale) {
+                this.width = typeof width == "number" ? width : 1;
+                this.height = typeof height == "number" ? height : 1;
+                this.parent = parent instanceof Element ? parent : document.body;
+                this.draw = Snap(this.width, this.height).appendTo(this.parent);
+                this.scale = typeof scale == "number" ? scale : 1;
+            }
+
+            var canvas = new Canvas(document.documentElement.clientWidth, document.documentElement.clientHeight, document.body, 1);
+
+            function makeLogo(svg, v, x, y, r, strokeWidth) {
+
+
+
+                var cx = x,
+                    cy = y;
+
+                if (v == 0) {
+                    cy = cy - (r * 2);
+                }
+                if (v == 1) {
+                    cx = x - (r * 6);
+                    cy = y;
+                }
+
+                var logo = P("logo");
+                var circles = P("circles");
+                logo._a(2, circles);
+
+                var circle_attrs = {
+                    stroke: "black",
+                    strokeWidth: strokeWidth ? strokeWidth : 1,
+                    fill: "transparent"
+                };
+
+                var line_attrs = {
+                    stroke: "white",
+                    strokeWidth: strokeWidth ? strokeWidth : 1,
+                    fill: "transparent"
+                };
+
+                (function makeMiddleCircle() {
+                    circles._a(2, P(
+                        "inner_circle",
+                        P("drawing",
+                            svg.line(cx - r, cy, cx + r, cy).attr(line_attrs),
+                            svg.line(cx, cy - r, cx, cy + r).attr(line_attrs),
+                            svg.circle(cx, cy, r).attr(circle_attrs)
+                        )
+                    ));
+                }());
+
+                (function makeOuterCircles() {
+                    //       [t, b, l, r]
+                    var nx = [0, 0, -2, +2],
+                        ny = [-2, +2, 0, 0],
+                        lx1 = [-1, +1, -2, +2],
+                        ly1 = [-2, +2, +1, -1],
+                        lx2 = [+1, -1, -2, +2],
+                        ly2 = [-2, +2, -1, +1];
+                    for (var a = 0; a < 4; a++) {
+                        circles._a(a + 3, P(
+                            "outter_circle",
+                            P("drawing",
+                                svg.line(
+                                    cx + (lx1[a] * r),
+                                    cy + (ly1[a] * r),
+                                    cx + (lx2[a] * r),
+                                    cy + (ly2[a] * r)
+                                ).attr(line_attrs),
+                                svg.line(
+                                    cx + (nx[a] * r),
+                                    cy + (ny[a] * r),
+                                    cx + (nx[a] / 2 * r),
+                                    cy + (ny[a] / 2 * r)
+                                ).attr(line_attrs),
+                                svg.circle(
+                                    cx + (nx[a] * r),
+                                    cy + (ny[a] * r),
+                                    r
+                                ).attr(circle_attrs)
+                            )
+                        ));
+
+                    }
+                }());
+
+
+                (function makeText() {
+                    var DIVIDE = "DIVIDE".split("");
+                    var PLUS = "PLUS".split("");
+
+                    var text = P("words");
+                    var divide = P("divide");
+                    var plus = P("plus");
+
+                    logo._a(7, text);
+                    text._a(2, divide, plus);
+
+                    var wx = x,
+                        wy = y + (r * 6),
+                        font_scale = 1.75,
+                        letter_spacing = 1.25,
+                        font_size = (r * font_scale),
+                        ds = function(a) {
+                            return (a >= 1 ? -r / 5 : 0) - (a + 0.6) * ((r * 2) / 5);
+                        },
+                        ps = function(a) {
+                            return (a >= 1 ? (a >= 2 ? -r / 6 : -r / 10) : 0) + (a + 0.6) * ((r * 2) / 3);
+                        };
+
+                    if (v) {
+                        if (v == 1) {
+                            wx = x + (r * 4);
+                            wy = y + (font_size / 3);
+                            ds = function(a) {
+                                return (a >= 1 ? -r / 5 : 0) - (a + 0.6) * ((r * 2) / 5);
+                            };
+                            ps = function(a) {
+                                return (a >= 1 ? (a >= 2 ? -r / 6 : -r / 10) : 0) + (a + 0.6) * ((r * 2) / 3);
+                            };
+                        }
+                    }
+
+                    var font_attrs = {
+                        fontFamily: 'Helvetica, sans-serif',
+                        fontSize: font_size + "px",
+                        textAnchor: "middle"
+                    };
+
+                    function makeLetter(lx, ly, lt, la) {
+                        var letter = P(
+                            lt,
+                            svg.text(
+                                wx + (lx * font_scale * letter_spacing),
+                                wy + (ly),
+                                lt
+                            ).attr(font_attrs).attr(la ? la : {})
+                        );
+                        return letter;
+                    }
+
+                    for (var a = 0; a < DIVIDE.length; a++) {
+                        b = DIVIDE.length - a - 1;
+                        divide._a(
+                            a + 2,
+                            makeLetter(ds(a),
+                                0,
+                                DIVIDE[b]
+                            )
+                        );
+                    }
+
+                    for (var a = 0; a < PLUS.length; a++) {
+                        plus._a(
+                            a + 2,
+                            makeLetter(
+                                ps(a),
+                                0,
+                                PLUS[a], {
+                                    fill: "white"
+                                }
+                            )
+                        );
+                    }
+                }());
+            }
+
+            var scale = 0.5,
+                r = (canvas.height / 7) * scale;
+
+            makeLogo(canvas.draw, 1, canvas.width / 2, canvas.height / 2, r, r / 5);
+
+            function rand(min, max) {
+                return Math.round(min + (Math.random() * (max - min)))
+            }
+            var seg = 4,
+                min = Math.round(256 / seg),
+                max = min * (seg - 1);
+
+            function randomBackground() {
+                document.body.style.backgroundColor = "rgb(" + rand(min, max) + ", " + rand(min, max) + ", " + rand(min, max) + ")";
+            }
+
+            document.body.onclick = randomBackground;
+            randomBackground();
+
+        </script>
+    </div>
+
+</body>
+
+</html>
