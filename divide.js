@@ -11,6 +11,10 @@ Zero.prototype.decrease = function () {
     return this;
 }
 
+Zero.prototype.flip = function () {
+    return this;
+}
+
 
 function One(i) {
     if (typeof i == "undefined") {
@@ -28,6 +32,10 @@ One.prototype.increase = function (i) {
 
 One.prototype.decrease = function () {
     return new Zero();
+}
+
+One.prototype.flip = function () {
+    return this;
 }
 
 
@@ -52,6 +60,10 @@ Two.prototype.decrease = function (q) {
         o = o[0];
     };
     return o;
+}
+
+Two.prototype.flip = function () {
+    return new Two(this[1], this[0]);
 }
 
 function _0() {
