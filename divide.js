@@ -14,6 +14,14 @@ function Map(a, b) {
     this[1] = typeof b == "undefined" ? new Constructor() : b;
 }
 
+// Construct Function
+// Can be used to reconstruct the instance into a new object
+
+Map.prototype.construct = function (Class) {
+    Object.setPrototypeOf(this, Class.prototype);
+    Class.apply(this, [].slice.call(arguments, 1));
+};
+
 // Statistical Functions
 
 Map.prototype.size = function (f) {
@@ -116,11 +124,12 @@ Map.prototype.take = function (object, f) {
         }
         return this;
     }
-    var output = new Map(this, object);
+    var self = new Map(this[0], this[1]);
+    this.construct(Map, self, object);
     if (typeof f == "function") {
-        f.call(this, output);
+        f.call(self, this);
     }
-    return output;
+    return this;
 }
 
 Map.prototype.drop = function (steps, a, b, f) {
