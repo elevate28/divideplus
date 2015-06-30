@@ -1,79 +1,171 @@
-function Zero() {}
+Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
+    obj.__proto__ = proto;
+    return obj;
+}
 
-Zero.prototype.increase = function (i) {
-    if (!(i instanceof Zero) && !(i instanceof One) && !(i instanceof Two)) {
-        i = new One(i);
+function Constructor() {}
+Empty.prototype.construct = function (Class) {
+    Object.setPrototypeOf(this, Class.prototype);
+    Class.apply(this, [].slice.call(arguments, 1));
+}
+
+function Map(a, b) {
+    this[0] = typeof a == "undefined" ? new Constructor() : a;
+    this[1] = typeof b == "undefined" ? new Constructor() : b;
+}
+
+// Statistical Functions
+
+Map.prototype.size = function (f) {
+    var size = 0;
+    if (typeof this[0] != "undefined") {
+        size = size + 1;
     }
-    return i;
-}
-
-Zero.prototype.decrease = function () {
-    return this;
-}
-
-Zero.prototype.flip = function () {
-    return this;
-}
-
-
-function One(i) {
-    if (typeof i == "undefined") {
-        i = new Zero();
+    if (typeof this[1] != "undefined") {
+        size = size + 1;
     }
-    this[0] = i;
-}
-
-One.prototype.increase = function (i) {
-    if (!(i instanceof Zero) && !(i instanceof One) && !(i instanceof Two)) {
-        i = new One(o);
+    if (typeof f == "function") {
+        f.call(this, size);
     }
-    return new Two(this, i);
+    return size;
 }
 
-One.prototype.decrease = function () {
-    return new Zero();
-}
-
-One.prototype.flip = function () {
-    return this;
-}
-
-
-function Two(o, i) {
-    this[0] = o;
-    this[1] = i;
-}
-
-Two.prototype.increase = function (i) {
-    if (!(i instanceof Zero) && !(i instanceof One) && !(i instanceof Two)) {
-        i = new One(o);
+Map.prototype.empty = function (f) {
+    var empty = 0;
+    if (!(this[0] instanceof Constructor)) {
+        empty = empty + (this[0] instanceof Map ? this[0].empty(f) : 0);
+    } else {
+        empty++;
     }
-    return new Two(this, i);
+    if (!(this[1] instanceof Constructor)) {
+        empty = empty + (this[1] instanceof Map ? this[1].empty(f) : 0);
+    } else {
+        empty++;
+    }
+    if (typeof f == "function") {
+        f.call(this, empty);
+    }
+    return empty;
 }
 
-Two.prototype.decrease = function (q) {
-    var o = this;
-    for (var i = 0; i < q; i++) {
-        if (typeof o == "undefined") {
-            return new Zero();
+Map.prototype.full = function (f) {
+    var full = 0;
+    if (!(this[0] instanceof Constructor)) {
+        full = full + (this[0] instanceof Map ? this[0].full(f) : 0);
+    } else {
+        full++;
+    }
+    if (!(this[1] instanceof Constructor)) {
+        full = full + (this[1] instanceof Map ? this[1].full(f) : 0);
+    } else {
+        full++;
+    }
+    if (typeof f == "function") {
+        f.call(this, full);
+    }
+    return full;
+}
+
+Map.prototype.capacity = function (f) {
+    var capacity = 2;
+    if (!(this[0] instanceof Constructor)) {
+        capacity = capacity + (this[0] instanceof Map ? this[0].capacity(f) : 0);
+    }
+    if (!(this[1] instanceof Constructor)) {
+        capacity = capacity + (this[1] instanceof Map ? this[1].capacity(f) : 0);
+    }
+    if (typeof f == "function") {
+        f.call(this, capacity);
+    }
+    return capacity;
+}
+
+Map.prototype.depth = function (f) {
+    var d0 = 0,
+        d1 = 0;
+    if (!(this[0] instanceof Constructor)) {
+        d0 = (this[0] instanceof Map ? this[0].depth(f) : 0);
+    }
+    if (!(this[1] instanceof Constructor)) {
+        d1 = (this[1] instanceof Map ? this[1].depth(f) : 0);
+    }
+    if (typeof f == "function") {
+        f.call(this, d0 > d1 ? d0 : d1);
+    }
+    return d0 > d1 ? d0 : d1;
+}
+
+// Operative Functions
+
+Map.prototype.take = function (object, f) {
+    if (typeof object == "undefined") {
+        object = new Constructor();
+    }
+    var size = this.size();
+    if (size == 0) {
+        this[0] = object;
+        if (typeof f == "function") {
+            f.call(this, this);
         }
-        o = o[0];
+        return this;
+    }
+    if (size == 1) {
+        this[(this[0] instanceof Constructor) ? 0 : 1] = object;
+        if (typeof f == "function") {
+            f.call(this, this);
+        }
+        return this;
+    }
+    var output = new Map(this, object);
+    if (typeof f == "function") {
+        f.call(this, output);
+    }
+    return output;
+}
+
+Map.prototype.drop = function (steps, a, b, f) {
+    var o = this;
+    a = a ? 1 : 0;
+    b = b ? 1 : 0;
+    for (var i = 0; i < q; i++) {
+        if (typeof f == "function") {
+            f.call(this, o);
+        }
+        if (!(o instanceof Map)) {
+            return o;
+        }
+        o = o[i & 1 ? a : b];
     };
     return o;
 }
 
-Two.prototype.flip = function () {
-    return new Two(this[1], this[0]);
+Map.prototype.flip = function (f) {
+    var temp = this[0];
+    this[0] = this[1];
+    this[1] = temp;
+    if (typeof f == "function") {
+        f.call(this, this);
+    }
+    return this;
 }
 
-function _0() {
-    return new Zero();
-};
+Map.prototype.walk = function (path, length, steps, f) {
+    if (typeof f == "function") {
+        f.call(this, this);
+    }
+    var bit = path & 1;
+    path = path >> 1;
+    if (bit) {
+        path = path + Math.pow(2, length - 1);
+    }
+    if (steps == 0) {
+        return this;
+    }
+    return this[bit].walk(path, length, steps - 1, f);
+}
 
-function _1(o) {
-    return new One(o);
-};
+// Short-hand Constructor
 
-function _2(o, i) {
-    return new Two(o, i);
+function _2(a, b) {
+    return new Map(a, b);
 };
