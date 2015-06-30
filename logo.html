@@ -36,8 +36,6 @@
                 this.scale = typeof scale == "number" ? scale : 1;
             }
 
-            var canvas = new Canvas(document.documentElement.clientWidth, document.documentElement.clientHeight, document.body, 1);
-
             function makeLogo(svg, v, x, y, r) {
 
                 var cx = x,
@@ -207,8 +205,10 @@
                 }());
             }
 
+            var canvas = new Canvas(document.documentElement.clientWidth, document.documentElement.clientHeight, document.body, 1);
+
             var scale = 1,
-                r = (canvas.width / 22) * scale;
+                r = (canvas.width / 24) * scale;
 
             function rand(min, max) {
                 return Math.round(min + (Math.random() * (max - min)))
@@ -217,9 +217,14 @@
                 min = Math.round(256 / seg),
                 max = min * (seg - 1);
 
+            function randomize() {
+                randomBackground();
+                randomLogo();
+            }
+
             function randomBackground() {
                 document.body.style.backgroundColor = "rgb(" + rand(min, max) + ", " + rand(min, max) + ", " + rand(min, max) + ")";
-                randomLogo();
+
             }
 
             function randomLogo() {
@@ -227,8 +232,8 @@
                 makeLogo(canvas.draw, rand(0, 1), canvas.width / 2, canvas.height / 2, (canvas.width / 24) + ((canvas.width / 24) / rand(1, 10)));
             }
 
-            document.body.onclick = randomBackground;
-            randomBackground();
+            document.body.onclick = randomize;
+            randomize();
 
         </script>
     </div>
