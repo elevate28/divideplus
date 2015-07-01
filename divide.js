@@ -10,9 +10,9 @@ Constructor.prototype.construct = function (Class) {
 }
 
 function Div(v, a, b) {
-    this[0] = typeof a == "undefined" ? new Constructor() : a;
+    this[-1] = typeof a == "undefined" ? new Constructor() : a;
+    this[0] = typeof v == "undefined" ? new Constructor() : v;
     this[1] = typeof b == "undefined" ? new Constructor() : b;
-    this.value = v;
 }
 
 // Construct Function
@@ -27,7 +27,7 @@ Div.prototype.construct = function (Class) {
 
 Div.prototype.size = function (f) {
     var size = 0;
-    if (typeof this[0] != "undefined") {
+    if (typeof this[-1] != "undefined") {
         size = size + 1;
     }
     if (typeof this[1] != "undefined") {
@@ -41,14 +41,14 @@ Div.prototype.size = function (f) {
 
 Div.prototype.contains = function (object, f) {
     var contains = 0;
-    if (this[0] == object) {
+    if (this[-1] == object) {
         contains++;
     }
     if (this[1] == object) {
         contains++;
     }
-    if (this[0] instanceof Div) {
-        contains = contains + this[0].contains(object, f);
+    if (this[-1] instanceof Div) {
+        contains = contains + this[-1].contains(object, f);
     }
     if (this[1] instanceof Div) {
         contains = contains + this[1].contains(object, f);
@@ -61,8 +61,8 @@ Div.prototype.contains = function (object, f) {
 
 Div.prototype.empty = function (f) {
     var empty = 0;
-    if (!(this[0] instanceof Constructor)) {
-        empty = empty + (this[0] instanceof Div ? this[0].empty(f) : 0);
+    if (!(this[-1] instanceof Constructor)) {
+        empty = empty + (this[-1] instanceof Div ? this[-1].empty(f) : 0);
     } else {
         empty++;
     }
@@ -79,8 +79,8 @@ Div.prototype.empty = function (f) {
 
 Div.prototype.full = function (f) {
     var full = 0;
-    if (!(this[0] instanceof Constructor)) {
-        full = full + (this[0] instanceof Div ? this[0].full(f) : 1);
+    if (!(this[-1] instanceof Constructor)) {
+        full = full + (this[-1] instanceof Div ? this[-1].full(f) : 1);
     }
     if (!(this[1] instanceof Constructor)) {
         full = full + (this[1] instanceof Div ? this[1].full(f) : 1);
@@ -93,8 +93,8 @@ Div.prototype.full = function (f) {
 
 Div.prototype.capacity = function (f) {
     var capacity = 2;
-    if (!(this[0] instanceof Constructor)) {
-        capacity = capacity + (this[0] instanceof Div ? this[0].capacity(f) : 0);
+    if (!(this[-1] instanceof Constructor)) {
+        capacity = capacity + (this[-1] instanceof Div ? this[-1].capacity(f) : 0);
     }
     if (!(this[1] instanceof Constructor)) {
         capacity = capacity + (this[1] instanceof Div ? this[1].capacity(f) : 0);
@@ -108,8 +108,8 @@ Div.prototype.capacity = function (f) {
 Div.prototype.depth = function (f) {
     var d0 = 1,
         d1 = 1;
-    if (!(this[0] instanceof Constructor)) {
-        d0 = d0 + (this[0] instanceof Div ? this[0].depth(f) : 0);
+    if (!(this[-1] instanceof Constructor)) {
+        d0 = d0 + (this[-1] instanceof Div ? this[-1].depth(f) : 0);
     }
     if (!(this[1] instanceof Constructor)) {
         d1 = d1 + (this[1] instanceof Div ? this[1].depth(f) : 0);
@@ -126,7 +126,7 @@ Div.prototype.accept = function (object, f) {
     if (typeof object == "undefined") {
         object = new Constructor();
     }
-    var self = new Div(this.value, this[0], this[1]);
+    var self = new Div(this[0], this[-1], this[1]);
     this.construct(Div, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
@@ -143,21 +143,21 @@ Div.prototype.take = function (object, f) {
     }
     var size = this.size();
     if (size == 0) {
-        this[0] = object;
+        this[-1] = object;
         if (typeof f == "function") {
             f.call(this, this);
         }
         return this;
     }
     if (size == 1) {
-        this[(this[0] instanceof Constructor) ? 0 : 1] = object;
+        this[(this[-1] instanceof Constructor) ? 0 : 1] = object;
         if (typeof f == "function") {
             f.call(this, this);
         }
         return this;
     }
-    if (this[0].empty() > 0) {
-        return this[0].take(object, f);
+    if (this[-1].empty() > 0) {
+        return this[-1].take(object, f);
     }
     return this[1].take(object, f);
 }
@@ -176,13 +176,13 @@ Div.prototype.drop = function (steps, a, b, f) {
         }
         o = o[c];
     };
-    this.construct(Div, o[0], o[1]);
+    this.construct(Div, o[-1], o[1]);
     return this;
 }
 
 Div.prototype.flip = function (f) {
-    var self = new Div(this.value, this[0], this[1]);
-    this.construct(Div, this.value, this[1], this[0]);
+    var self = new Div(this[0], this[-1], this[1]);
+    this.construct(Div, this[0], this[1], this[-1]);
     if (typeof f == "function") {
         f.call(self, this);
     }
