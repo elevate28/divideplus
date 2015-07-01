@@ -38,6 +38,26 @@ Map.prototype.size = function (f) {
     return size;
 }
 
+Map.prototype.contains = function (object, f) {
+    var contains = 0;
+    if (this[0] == object) {
+        contains++;
+    }
+    if (this[1] == object) {
+        contains++;
+    }
+    if (this[0] instanceof Map) {
+        contains = contains + this[0].contains(object, f);
+    }
+    if (this[1] instanceof Map) {
+        contains = contains + this[1].contains(object, f);
+    }
+    if (typeof f == "function") {
+        f.call(this, contains);
+    }
+    return contains;
+}
+
 Map.prototype.empty = function (f) {
     var empty = 0;
     if (!(this[0] instanceof Constructor)) {
@@ -59,14 +79,10 @@ Map.prototype.empty = function (f) {
 Map.prototype.full = function (f) {
     var full = 0;
     if (!(this[0] instanceof Constructor)) {
-        full = full + (this[0] instanceof Map ? this[0].full(f) : 0);
-    } else {
-        full++;
+        full = full + (this[0] instanceof Map ? this[0].full(f) : 1);
     }
     if (!(this[1] instanceof Constructor)) {
-        full = full + (this[1] instanceof Map ? this[1].full(f) : 0);
-    } else {
-        full++;
+        full = full + (this[1] instanceof Map ? this[1].full(f) : 1);
     }
     if (typeof f == "function") {
         f.call(this, full);
@@ -89,13 +105,13 @@ Map.prototype.capacity = function (f) {
 }
 
 Map.prototype.depth = function (f) {
-    var d0 = 0,
-        d1 = 0;
+    var d0 = 1,
+        d1 = 1;
     if (!(this[0] instanceof Constructor)) {
-        d0 = (this[0] instanceof Map ? this[0].depth(f) : 0);
+        d0 = d0 + (this[0] instanceof Map ? this[0].depth(f) : 0);
     }
     if (!(this[1] instanceof Constructor)) {
-        d1 = (this[1] instanceof Map ? this[1].depth(f) : 0);
+        d1 = d1 + (this[1] instanceof Map ? this[1].depth(f) : 0);
     }
     if (typeof f == "function") {
         f.call(this, d0 > d1 ? d0 : d1);
@@ -105,9 +121,24 @@ Map.prototype.depth = function (f) {
 
 // Operative Functions
 
+Map.prototype.accept = function (object, f) {
+    if (typeof object == "undefined") {
+        object = new Constructor();
+    }
+    var self = new Map(this[0], this[1]);
+    this.construct(Map, self, object);
+    if (typeof f == "function") {
+        f.call(self, this);
+    }
+    return this;
+}
+
 Map.prototype.take = function (object, f) {
     if (typeof object == "undefined") {
         object = new Constructor();
+    }
+    if (this.empty() == 0) {
+        return this.accept(object, f);
     }
     var size = this.size();
     if (size == 0) {
@@ -124,12 +155,10 @@ Map.prototype.take = function (object, f) {
         }
         return this;
     }
-    var self = new Map(this[0], this[1]);
-    this.construct(Map, self, object);
-    if (typeof f == "function") {
-        f.call(self, this);
+    if (this[0].empty() > 0) {
+        return this[0].take(object, f);
     }
-    return this;
+    return this[1].take(object, f);
 }
 
 Map.prototype.drop = function (steps, a, b, f) {
@@ -161,12 +190,19 @@ Map.prototype.flip = function (f) {
 
 Map.prototype.walk = function (path, length, steps, f) {
     if (typeof f == "function") {
-        f.call(this, this);
+        f.call(this, this, path, length, steps);
     }
-    var bit = path & 1;
-    path = path >> 1;
-    if (bit) {
-        path = path + Math.pow(2, length - 1);
+    if (typeof path == "number") {
+        var bit = path & 1;
+        path = path >> 1;
+        if (bit) {
+            path = path + Math.pow(2, length - 1);
+        }
+    } else if (Array.isArray(path)) {
+        var bit = path.shift();
+        path.push(bit ? bit : 0);
+    } else {
+        throw "UnknownPathType";
     }
     if (steps == 0) {
         return this;
