@@ -9,7 +9,7 @@ Constructor.prototype.construct = function (Class) {
     Class.apply(this, [].slice.call(arguments, 1));
 }
 
-function Map(a, b, v) {
+function Map(v, a, b) {
     this[0] = typeof a == "undefined" ? new Constructor() : a;
     this[1] = typeof b == "undefined" ? new Constructor() : b;
     this.value = v;
@@ -126,8 +126,8 @@ Map.prototype.accept = function (object, f) {
     if (typeof object == "undefined") {
         object = new Constructor();
     }
-    var self = new Map(this[0], this[1], this.value);
-    this.construct(Map, self, object);
+    var self = new Map(this.value, this[0], this[1]);
+    this.construct(Map, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
     }
@@ -181,8 +181,8 @@ Map.prototype.drop = function (steps, a, b, f) {
 }
 
 Map.prototype.flip = function (f) {
-    var self = new Map(this[0], this[1], this.value);
-    this.construct(Map, this[1], this[0], this.value);
+    var self = new Map(this.value, this[0], this[1]);
+    this.construct(Map, this.value, this[1], this[0]);
     if (typeof f == "function") {
         f.call(self, this);
     }
@@ -213,6 +213,6 @@ Map.prototype.walk = function (path, length, steps, f) {
 
 // Short-hand Constructor
 
-function _2(a, b, v) {
-    return new Map(a, b, v);
+function _2(v, a, b) {
+    return new Map(v, a, b);
 };
