@@ -27,11 +27,11 @@ Div.prototype.construct = function (Class) {
 
 Div.prototype.size = function (f) {
     var size = 0;
-    if (typeof this[-1] != "undefined") {
-        size = size + 1;
+    if (this[-1] instanceof Div) {
+        size++;
     }
-    if (typeof this[1] != "undefined") {
-        size = size + 1;
+    if (this[1] instanceof Div) {
+        size++;
     }
     if (typeof f == "function") {
         f.call(this, size);
@@ -48,10 +48,10 @@ Div.prototype.contains = function (object, f) {
         contains++;
     }
     if (this[-1] instanceof Div) {
-        contains = contains + this[-1].contains(object, f);
+        contains += this[-1].contains(object, f);
     }
     if (this[1] instanceof Div) {
-        contains = contains + this[1].contains(object, f);
+        contains += this[1].contains(object, f);
     }
     if (typeof f == "function") {
         f.call(this, contains);
@@ -61,13 +61,13 @@ Div.prototype.contains = function (object, f) {
 
 Div.prototype.empty = function (f) {
     var empty = 0;
-    if (!(this[-1] instanceof Origin)) {
-        empty = empty + (this[-1] instanceof Div ? this[-1].empty(f) : 0);
+    if (this[-1] instanceof Div) {
+        empty += this[-1].empty(f);
     } else {
         empty++;
     }
-    if (!(this[1] instanceof Origin)) {
-        empty = empty + (this[1] instanceof Div ? this[1].empty(f) : 0);
+    if (this[1] instanceof Div) {
+        empty += this[1].empty(f);
     } else {
         empty++;
     }
@@ -79,11 +79,11 @@ Div.prototype.empty = function (f) {
 
 Div.prototype.full = function (f) {
     var full = 0;
-    if (!(this[-1] instanceof Origin)) {
-        full = full + (this[-1] instanceof Div ? this[-1].full(f) : 1);
+    if (this[-1] instanceof Div) {
+        full += 1 + this[-1].full(f);
     }
-    if (!(this[1] instanceof Origin)) {
-        full = full + (this[1] instanceof Div ? this[1].full(f) : 1);
+    if (this[1] instanceof Div) {
+        full += 1 + this[1].full(f);
     }
     if (typeof f == "function") {
         f.call(this, full);
@@ -93,11 +93,11 @@ Div.prototype.full = function (f) {
 
 Div.prototype.capacity = function (f) {
     var capacity = 2;
-    if (!(this[-1] instanceof Origin)) {
-        capacity = capacity + (this[-1] instanceof Div ? this[-1].capacity(f) : 0);
+    if (this[-1] instanceof Div) {
+        capacity += this[-1].capacity(f);
     }
-    if (!(this[1] instanceof Origin)) {
-        capacity = capacity + (this[1] instanceof Div ? this[1].capacity(f) : 0);
+    if (this[1] instanceof Div) {
+        capacity += this[1].capacity(f);
     }
     if (typeof f == "function") {
         f.call(this, capacity);
@@ -108,11 +108,11 @@ Div.prototype.capacity = function (f) {
 Div.prototype.depth = function (f) {
     var d0 = 1,
         d1 = 1;
-    if (!(this[-1] instanceof Origin)) {
-        d0 = d0 + (this[-1] instanceof Div ? this[-1].depth(f) : 0);
+    if (this[-1] instanceof Div) {
+        d0 += this[-1].depth(f);
     }
-    if (!(this[1] instanceof Origin)) {
-        d1 = d1 + (this[1] instanceof Div ? this[1].depth(f) : 0);
+    if (this[1] instanceof Div) {
+        d0 += this[1].depth(f);
     }
     if (typeof f == "function") {
         f.call(this, d0 > d1 ? d0 : d1);
