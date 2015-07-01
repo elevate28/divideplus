@@ -4,7 +4,7 @@ Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
 }
 
 function Origin() {}
-Origin.prototype.construct = function (Class) {
+Origin.prototype.become = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 }

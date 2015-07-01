@@ -4,7 +4,7 @@ Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
 }
 
 function Origin() {}
-Origin.prototype.construct = function (Class) {
+Origin.prototype.become = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 }
@@ -15,10 +15,10 @@ function Divide(a, b, c) {
     this[1] = typeof c == "undefined" ? new Origin() : c;
 }
 
-// Construct Function
-// Can be used to reconstruct the instance into a new object
+// become Function
+// Can be used to rebecome the instance into a new object
 
-Divide.prototype.construct = function (Class) {
+Divide.prototype.become = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 };
@@ -130,7 +130,7 @@ Divide.prototype.accept = function (object, f) {
         throw "IncompatibleObjectType";;
     }
     var self = new Divide(this[-1], this[0], this[1]);
-    this.construct(Divide, undefined, self, object);
+    this.become(Divide, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
     }
@@ -178,17 +178,17 @@ Divide.prototype.drop = function (steps, a, b, f) {
             f.call(this, o);
         }
         if (o[c] instanceof Origin) {
-            o[c].construct(Divide);
+            o[c].become(Divide);
         }
         o = o[c];
     };
-    this.construct(Divide, o[-1], o[1]);
+    this.become(Divide, o[-1], o[1]);
     return this;
 }
 
 Divide.prototype.flip = function (f) {
     var self = new Divide(this[-1], this[0], this[1]);
-    this.construct(Divide, this[1], this[0], this[-1]);
+    this.become(Divide, this[1], this[0], this[-1]);
     if (typeof f == "function") {
         f.call(self, this);
     }
@@ -222,7 +222,7 @@ Divide.prototype.walk = function (path, length, steps, f) {
         return this;
     }
     if (this[bit] instanceof Origin) {
-        this[bit].construct(Divide);
+        this[bit].become(Divide);
     }
     return this[bit].walk(path, length, steps - 1, f);
 }
