@@ -11,8 +11,29 @@ Origin.prototype.become = Origin.prototype.become || function (Class) {
 
 function Axis(a, b, c) {
     this[-1] = typeof a == "undefined" ? new Origin() : a;
+
+    if (!(this[-1] instanceof Axis || this[-1] instanceof Origin)) {
+        throw "IncompatibleObjectType";;
+    }
+    if (this[-1] instanceof Axis) {
+        this[-1] = this[-1].clone();
+    }
+
+    // Middle can contain an object / value
     this[0] = typeof b == "undefined" ? new Origin() : b;
+
+    if (this[0] instanceof Axis) {
+        this[0] = this[0].clone();
+    }
+
     this[1] = typeof c == "undefined" ? new Origin() : c;
+
+    if (!(this[1] instanceof Axis || this[1] instanceof Origin)) {
+        throw "IncompatibleObjectType";;
+    }
+    if (this[1] instanceof Axis) {
+        this[1] = this[1].clone();
+    }
 }
 
 // become Function
@@ -120,19 +141,34 @@ Axis.prototype.depth = function (f) {
     return d0 > d1 ? d0 : d1;
 }
 
+Axis.prototype.clone = function (f) {
+    var clone = new Map(
+        this[-1] instanceof Axis ? this[-1].clone(f) : new Origin(),
+        this[0] instanceof Axis ? this[0].clone(f) : (this[0] instanceof Origin ? new Origin() : this[0]),
+        this[1] instanceof Axis ? this[1].clone(f) : new Origin()
+    );
+    if (typeof f == "function") {
+        f.call(this, clone);
+    };
+    return clone;
+}
+
 // Operative Functions
 
-Axis.prototype.accept = function (object, f) {
-    if (typeof object == "undefined") {
-        object = new Origin();
+Axis.prototype.accept = function (a, b, c, f) {
+    if (a == true) {
+        a = this.clone();
     }
-    if (!(object instanceof Axis || object instanceof Origin)) {
-        throw "IncompatibleObjectType";;
+    if (b == true) {
+        b = this.clone();
     }
-    var self = new Axis(this[-1], this[0], this[1]);
-    this.become(Axis, undefined, self, object);
+    if (c == true) {
+        c = this.clone();
+    }
+    var clone = this.clone();
+    this.become(Axis, a, b, c);
     if (typeof f == "function") {
-        f.call(self, this);
+        f.call(clone, this);
     }
     return this;
 }
@@ -142,23 +178,27 @@ Axis.prototype.take = function (object, f) {
         object = new Origin();
     }
     if (!(object instanceof Axis || object instanceof Origin)) {
-        throw "IncompatibleObjectType";;
+        throw "IncompatibleObjectType";
     }
     if (this.empty() == 0) {
-        return this.accept(object, f);
+        return this.accept(object, undefined, true, f);
     }
+    var clone = this.clone();
     var size = this.size();
     if (size == 0) {
-        this[-1] = object;
+        this.accept(object, this[0], this[1]);
         if (typeof f == "function") {
-            f.call(this, this);
+            f.call(clone, this);
         }
         return this;
     }
     if (size == 1) {
-        this[(this[-1] instanceof Origin) ? 0 : 1] = object;
+        this.accept(
+            this[-1] instanceof Origin ? object : this[-1],
+            this[0],
+            this[1] instanceof Origin ? object : this[1]);
         if (typeof f == "function") {
-            f.call(this, this);
+            f.call(clone, this);
         }
         return this;
     }
