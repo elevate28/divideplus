@@ -212,7 +212,7 @@ Div.prototype.walk = function (path, length, steps, f) {
 }
 
 // Short-hand Constructor
-
-function _2(v, a, b) {
+var _ = {};
+_._ = function (v, a, b) {
     return new Div(v, a, b);
 };
