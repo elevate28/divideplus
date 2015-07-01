@@ -4,7 +4,7 @@ Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
 }
 
 function Constructor() {}
-Empty.prototype.construct = function (Class) {
+Constructor.prototype.construct = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 }
@@ -136,24 +136,25 @@ Map.prototype.drop = function (steps, a, b, f) {
     var o = this;
     a = a ? 1 : 0;
     b = b ? 1 : 0;
+    var c = i & 1 ? a : b;
     for (var i = 0; i < q; i++) {
         if (typeof f == "function") {
             f.call(this, o);
         }
-        if (!(o instanceof Map)) {
-            return o;
+        if (!(o[c] instanceof Map)) {
+            break;
         }
-        o = o[i & 1 ? a : b];
+        o = o[c];
     };
-    return o;
+    this.construct(Map, o[0], o[1]);
+    return this;
 }
 
 Map.prototype.flip = function (f) {
-    var temp = this[0];
-    this[0] = this[1];
-    this[1] = temp;
+    var self = new Map(this[0], this[1]);
+    this.construct(Map, this[1], this[0]);
     if (typeof f == "function") {
-        f.call(this, this);
+        f.call(self, this);
     }
     return this;
 }
