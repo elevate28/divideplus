@@ -3,13 +3,13 @@ Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
     return obj;
 }
 
-function Origin() {}
-Origin.prototype.become = function (Class) {
+Origin = Origin || function Origin() {};
+Origin.prototype.become = Origin.prototype.become || function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
-}
+};
 
-function Divide(a, b, c) {
+function Axis(a, b, c) {
     this[-1] = typeof a == "undefined" ? new Origin() : a;
     this[0] = typeof b == "undefined" ? new Origin() : b;
     this[1] = typeof c == "undefined" ? new Origin() : c;
@@ -18,19 +18,19 @@ function Divide(a, b, c) {
 // become Function
 // Can be used to rebecome the instance into a new object
 
-Divide.prototype.become = function (Class) {
+Axis.prototype.become = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 };
 
 // Statistical Functions
 
-Divide.prototype.size = function (f) {
+Axis.prototype.size = function (f) {
     var size = 0;
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         size++;
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         size++;
     }
     if (typeof f == "function") {
@@ -39,7 +39,7 @@ Divide.prototype.size = function (f) {
     return size;
 }
 
-Divide.prototype.contains = function (object, f) {
+Axis.prototype.contains = function (object, f) {
     var contains = 0;
     if (this[-1] == object) {
         contains++;
@@ -47,10 +47,10 @@ Divide.prototype.contains = function (object, f) {
     if (this[1] == object) {
         contains++;
     }
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         contains += this[-1].contains(object, f);
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         contains += this[1].contains(object, f);
     }
     if (typeof f == "function") {
@@ -59,14 +59,14 @@ Divide.prototype.contains = function (object, f) {
     return contains;
 }
 
-Divide.prototype.empty = function (f) {
+Axis.prototype.empty = function (f) {
     var empty = 0;
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         empty += this[-1].empty(f);
     } else {
         empty++;
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         empty += this[1].empty(f);
     } else {
         empty++;
@@ -77,12 +77,12 @@ Divide.prototype.empty = function (f) {
     return empty;
 }
 
-Divide.prototype.full = function (f) {
+Axis.prototype.full = function (f) {
     var full = 0;
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         full += 1 + this[-1].full(f);
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         full += 1 + this[1].full(f);
     }
     if (typeof f == "function") {
@@ -91,12 +91,12 @@ Divide.prototype.full = function (f) {
     return full;
 }
 
-Divide.prototype.capacity = function (f) {
+Axis.prototype.capacity = function (f) {
     var capacity = 2;
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         capacity += this[-1].capacity(f);
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         capacity += this[1].capacity(f);
     }
     if (typeof f == "function") {
@@ -105,13 +105,13 @@ Divide.prototype.capacity = function (f) {
     return capacity;
 }
 
-Divide.prototype.depth = function (f) {
+Axis.prototype.depth = function (f) {
     var d0 = 1,
         d1 = 1;
-    if (this[-1] instanceof Divide) {
+    if (this[-1] instanceof Axis) {
         d0 += this[-1].depth(f);
     }
-    if (this[1] instanceof Divide) {
+    if (this[1] instanceof Axis) {
         d0 += this[1].depth(f);
     }
     if (typeof f == "function") {
@@ -122,26 +122,26 @@ Divide.prototype.depth = function (f) {
 
 // Operative Functions
 
-Divide.prototype.accept = function (object, f) {
+Axis.prototype.accept = function (object, f) {
     if (typeof object == "undefined") {
         object = new Origin();
     }
-    if (!(object instanceof Divide || object instanceof Origin)) {
+    if (!(object instanceof Axis || object instanceof Origin)) {
         throw "IncompatibleObjectType";;
     }
-    var self = new Divide(this[-1], this[0], this[1]);
-    this.become(Divide, undefined, self, object);
+    var self = new Axis(this[-1], this[0], this[1]);
+    this.become(Axis, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
     }
     return this;
 }
 
-Divide.prototype.take = function (object, f) {
+Axis.prototype.take = function (object, f) {
     if (typeof object == "undefined") {
         object = new Origin();
     }
-    if (!(object instanceof Divide || object instanceof Origin)) {
+    if (!(object instanceof Axis || object instanceof Origin)) {
         throw "IncompatibleObjectType";;
     }
     if (this.empty() == 0) {
@@ -168,7 +168,7 @@ Divide.prototype.take = function (object, f) {
     return this[1].take(object, f);
 }
 
-Divide.prototype.drop = function (steps, a, b, f) {
+Axis.prototype.drop = function (steps, a, b, f) {
     var o = this;
     a = a ? 1 : 0;
     b = b ? 1 : 0;
@@ -178,24 +178,24 @@ Divide.prototype.drop = function (steps, a, b, f) {
             f.call(this, o);
         }
         if (o[c] instanceof Origin) {
-            o[c].become(Divide);
+            o[c].become(Axis);
         }
         o = o[c];
     };
-    this.become(Divide, o[-1], o[1]);
+    this.become(Axis, o[-1], o[1]);
     return this;
 }
 
-Divide.prototype.flip = function (f) {
-    var self = new Divide(this[-1], this[0], this[1]);
-    this.become(Divide, this[1], this[0], this[-1]);
+Axis.prototype.flip = function (f) {
+    var self = new Axis(this[-1], this[0], this[1]);
+    this.become(Axis, this[1], this[0], this[-1]);
     if (typeof f == "function") {
         f.call(self, this);
     }
     return this;
 }
 
-Divide.prototype.walk = function (path, length, steps, f) {
+Axis.prototype.walk = function (path, length, steps, f) {
     if (typeof f == "function") {
         f.call(this, this, path, length, steps);
     }
@@ -222,7 +222,7 @@ Divide.prototype.walk = function (path, length, steps, f) {
         return this;
     }
     if (this[bit] instanceof Origin) {
-        this[bit].become(Divide);
+        this[bit].become(Axis);
     }
     return this[bit].walk(path, length, steps - 1, f);
 }
@@ -230,5 +230,5 @@ Divide.prototype.walk = function (path, length, steps, f) {
 // Short-hand Origin
 var _ = {};
 _._ = function (a, b, c) {
-    return new Divide(a, b, c);
+    return new Axis(a, b, c);
 };
