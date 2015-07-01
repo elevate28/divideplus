@@ -9,10 +9,10 @@ Origin.prototype.construct = function (Class) {
     Class.apply(this, [].slice.call(arguments, 1));
 }
 
-function Divide(v, a, b) {
+function Divide(a, b, c) {
     this[-1] = typeof a == "undefined" ? new Origin() : a;
-    this[0] = typeof v == "undefined" ? new Origin() : v;
-    this[1] = typeof b == "undefined" ? new Origin() : b;
+    this[0] = typeof b == "undefined" ? new Origin() : b;
+    this[1] = typeof c == "undefined" ? new Origin() : c;
 }
 
 // Construct Function
@@ -129,7 +129,7 @@ Divide.prototype.accept = function (object, f) {
     if (!(object instanceof Divide || object instanceof Origin)) {
         throw "IncompatibleObjectType";;
     }
-    var self = new Divide(this[0], this[-1], this[1]);
+    var self = new Divide(this[-1], this[0], this[1]);
     this.construct(Divide, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
@@ -187,8 +187,8 @@ Divide.prototype.drop = function (steps, a, b, f) {
 }
 
 Divide.prototype.flip = function (f) {
-    var self = new Divide(this[0], this[-1], this[1]);
-    this.construct(Divide, this[0], this[1], this[-1]);
+    var self = new Divide(this[-1], this[0], this[1]);
+    this.construct(Divide, this[1], this[0], this[-1]);
     if (typeof f == "function") {
         f.call(self, this);
     }
@@ -206,6 +206,12 @@ Divide.prototype.walk = function (path, length, steps, f) {
             path = path + Math.pow(2, length - 1);
         }
     } else if (Array.isArray(path)) {
+        if (length < path.length) {
+            path = path.slice(0, length);
+        }
+        while (path.length < length) {
+            path.push(0);
+        }
         var bit = path.shift();
         path.push(bit ? bit : 0);
     } else {
@@ -223,6 +229,6 @@ Divide.prototype.walk = function (path, length, steps, f) {
 
 // Short-hand Origin
 var _ = {};
-_._ = function (v, a, b) {
-    return new Divide(v, a, b);
+_._ = function (a, b, c) {
+    return new Divide(a, b, c);
 };
