@@ -9,7 +9,7 @@ Constructor.prototype.construct = function (Class) {
     Class.apply(this, [].slice.call(arguments, 1));
 }
 
-function Map(v, a, b) {
+function Div(v, a, b) {
     this[0] = typeof a == "undefined" ? new Constructor() : a;
     this[1] = typeof b == "undefined" ? new Constructor() : b;
     this.value = v;
@@ -18,14 +18,14 @@ function Map(v, a, b) {
 // Construct Function
 // Can be used to reconstruct the instance into a new object
 
-Map.prototype.construct = function (Class) {
+Div.prototype.construct = function (Class) {
     Object.setPrototypeOf(this, Class.prototype);
     Class.apply(this, [].slice.call(arguments, 1));
 };
 
 // Statistical Functions
 
-Map.prototype.size = function (f) {
+Div.prototype.size = function (f) {
     var size = 0;
     if (typeof this[0] != "undefined") {
         size = size + 1;
@@ -39,7 +39,7 @@ Map.prototype.size = function (f) {
     return size;
 }
 
-Map.prototype.contains = function (object, f) {
+Div.prototype.contains = function (object, f) {
     var contains = 0;
     if (this[0] == object) {
         contains++;
@@ -47,10 +47,10 @@ Map.prototype.contains = function (object, f) {
     if (this[1] == object) {
         contains++;
     }
-    if (this[0] instanceof Map) {
+    if (this[0] instanceof Div) {
         contains = contains + this[0].contains(object, f);
     }
-    if (this[1] instanceof Map) {
+    if (this[1] instanceof Div) {
         contains = contains + this[1].contains(object, f);
     }
     if (typeof f == "function") {
@@ -59,15 +59,15 @@ Map.prototype.contains = function (object, f) {
     return contains;
 }
 
-Map.prototype.empty = function (f) {
+Div.prototype.empty = function (f) {
     var empty = 0;
     if (!(this[0] instanceof Constructor)) {
-        empty = empty + (this[0] instanceof Map ? this[0].empty(f) : 0);
+        empty = empty + (this[0] instanceof Div ? this[0].empty(f) : 0);
     } else {
         empty++;
     }
     if (!(this[1] instanceof Constructor)) {
-        empty = empty + (this[1] instanceof Map ? this[1].empty(f) : 0);
+        empty = empty + (this[1] instanceof Div ? this[1].empty(f) : 0);
     } else {
         empty++;
     }
@@ -77,13 +77,13 @@ Map.prototype.empty = function (f) {
     return empty;
 }
 
-Map.prototype.full = function (f) {
+Div.prototype.full = function (f) {
     var full = 0;
     if (!(this[0] instanceof Constructor)) {
-        full = full + (this[0] instanceof Map ? this[0].full(f) : 1);
+        full = full + (this[0] instanceof Div ? this[0].full(f) : 1);
     }
     if (!(this[1] instanceof Constructor)) {
-        full = full + (this[1] instanceof Map ? this[1].full(f) : 1);
+        full = full + (this[1] instanceof Div ? this[1].full(f) : 1);
     }
     if (typeof f == "function") {
         f.call(this, full);
@@ -91,13 +91,13 @@ Map.prototype.full = function (f) {
     return full;
 }
 
-Map.prototype.capacity = function (f) {
+Div.prototype.capacity = function (f) {
     var capacity = 2;
     if (!(this[0] instanceof Constructor)) {
-        capacity = capacity + (this[0] instanceof Map ? this[0].capacity(f) : 0);
+        capacity = capacity + (this[0] instanceof Div ? this[0].capacity(f) : 0);
     }
     if (!(this[1] instanceof Constructor)) {
-        capacity = capacity + (this[1] instanceof Map ? this[1].capacity(f) : 0);
+        capacity = capacity + (this[1] instanceof Div ? this[1].capacity(f) : 0);
     }
     if (typeof f == "function") {
         f.call(this, capacity);
@@ -105,14 +105,14 @@ Map.prototype.capacity = function (f) {
     return capacity;
 }
 
-Map.prototype.depth = function (f) {
+Div.prototype.depth = function (f) {
     var d0 = 1,
         d1 = 1;
     if (!(this[0] instanceof Constructor)) {
-        d0 = d0 + (this[0] instanceof Map ? this[0].depth(f) : 0);
+        d0 = d0 + (this[0] instanceof Div ? this[0].depth(f) : 0);
     }
     if (!(this[1] instanceof Constructor)) {
-        d1 = d1 + (this[1] instanceof Map ? this[1].depth(f) : 0);
+        d1 = d1 + (this[1] instanceof Div ? this[1].depth(f) : 0);
     }
     if (typeof f == "function") {
         f.call(this, d0 > d1 ? d0 : d1);
@@ -122,19 +122,19 @@ Map.prototype.depth = function (f) {
 
 // Operative Functions
 
-Map.prototype.accept = function (object, f) {
+Div.prototype.accept = function (object, f) {
     if (typeof object == "undefined") {
         object = new Constructor();
     }
-    var self = new Map(this.value, this[0], this[1]);
-    this.construct(Map, undefined, self, object);
+    var self = new Div(this.value, this[0], this[1]);
+    this.construct(Div, undefined, self, object);
     if (typeof f == "function") {
         f.call(self, this);
     }
     return this;
 }
 
-Map.prototype.take = function (object, f) {
+Div.prototype.take = function (object, f) {
     if (typeof object == "undefined") {
         object = new Constructor();
     }
@@ -162,7 +162,7 @@ Map.prototype.take = function (object, f) {
     return this[1].take(object, f);
 }
 
-Map.prototype.drop = function (steps, a, b, f) {
+Div.prototype.drop = function (steps, a, b, f) {
     var o = this;
     a = a ? 1 : 0;
     b = b ? 1 : 0;
@@ -171,25 +171,25 @@ Map.prototype.drop = function (steps, a, b, f) {
         if (typeof f == "function") {
             f.call(this, o);
         }
-        if (!(o[c] instanceof Map)) {
+        if (!(o[c] instanceof Div)) {
             break;
         }
         o = o[c];
     };
-    this.construct(Map, o[0], o[1]);
+    this.construct(Div, o[0], o[1]);
     return this;
 }
 
-Map.prototype.flip = function (f) {
-    var self = new Map(this.value, this[0], this[1]);
-    this.construct(Map, this.value, this[1], this[0]);
+Div.prototype.flip = function (f) {
+    var self = new Div(this.value, this[0], this[1]);
+    this.construct(Div, this.value, this[1], this[0]);
     if (typeof f == "function") {
         f.call(self, this);
     }
     return this;
 }
 
-Map.prototype.walk = function (path, length, steps, f) {
+Div.prototype.walk = function (path, length, steps, f) {
     if (typeof f == "function") {
         f.call(this, this, path, length, steps);
     }
@@ -214,5 +214,5 @@ Map.prototype.walk = function (path, length, steps, f) {
 // Short-hand Constructor
 
 function _2(v, a, b) {
-    return new Map(v, a, b);
+    return new Div(v, a, b);
 };
